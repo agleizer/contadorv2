@@ -1,7 +1,6 @@
 "use client";
 
-import GraficoPizza from "@/app/(main)/porlocal/porLocal-components/graficoPizza";
-import GraficoBarras from "@/app/(main)/visaogeral/visaoGeral-components/graficoBarras";
+import GraficoPizza from "src/app/(main)/porlocal/porLocal-components/graficoPizza.jsx";
 
 export default function PorLocal() {
   return (
@@ -27,12 +26,6 @@ export default function PorLocal() {
           nome={"Quarto Andar"}
           imagem={"/graficos/pizza_local_1.png"}
         ></GraficoPizza>
-      </div>
-      <div className="mt-12">
-        <GraficoBarras
-          nome={"Série Temporal"}
-          imagem={"/graficos/serie_temporal_local.png"}
-        ></GraficoBarras>
       </div>
     </div>
   );

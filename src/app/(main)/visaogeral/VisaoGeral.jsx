@@ -1,45 +1,81 @@
 "use client";
 
-import EstatisticaGeral from "@/app/(main)/visaogeral/visaoGeral-components/estatisticaGeral";
-import GraficoBarras from "@/app/(main)/visaogeral/visaoGeral-components/graficoBarras";
 import PlotlyChart from "@/app/(main)/visaogeral/visaoGeral-components/graficoBarrasDinamico";
-import Cameras from "@/app/(main)/visaogeral/visaoGeral-components/camera";
+import React, { useState, useEffect } from 'react';
 
-// vetores gráfico geral
-var vetorXGeral = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14];
-var vetorYGeral = [
-  5, 8, 150, 168, 180, 185, 177, 5, 8, 150, 168, 180, 185, 177,
-];
 
-// variaveis estatísticas
-var mediaMensal = "7.6K";
-var mediaSemanal = "1.8K";
-var mediaDiaria = "230";
-var periodoTrafego = "19h20";
-
-// vetores grafico por local
-var vetorXLocal = [19, 35, 28, 37, 48];
-var vetorYLocal = ["4o andar", "3o andar", "2o andar", "1o andar", "Entrada"];
-
-// vetores grafico dias semana
-var vetorXDias = [5, 8, 150, 168, 180, 185, 177];
-var vetorYDias = [
-  "Domingo",
-  "Sábado",
-  "Sexta",
-  "Quinta",
-  "Quarta",
-  "Terça",
-  "Segunda",
-];
-
-export default function VisaoGeral() {
+function EstatisticaGeral(props) {
   return (
-    <div
-      id="conteudo"
-      className="relative z-7 mt-14 w-full pt-4 pl-80 pr-[60px]"
-    >
+    <div className='grid justify-items-center'>
+      <p className="font-extrabold text-black">{props.numero}</p>
+      <p className='font-bold text-sm' class="estatistica-texto">{props.nome}</p>
+    </div>
+  )
+}
+
+function GraficoBarras(props) {
+  return (
+    <div className="flex-col justify-center mx-4 outline outline-slate-100 outline-offset-8 rounded">
+      <div className="flex justify-between">
+        <div className="mb-4">{props.nome}</div>
+        <div>
+          <p>...</p>
+        </div>
+      </div>
+      <div className="flex justify-center">
+        <img className="w-full" src={props.imagem} />
+      </div>
+    </div>
+  );
+}
+
+
+
+// Função para buscar os dados
+const getDados = async () => {
+  try {
+    const res = await fetch("http://localhost:3000/api/dados", {
+      cache: "no-store",
+    });
+
+    if (!res.ok) {
+      throw new Error("Failed to fetch dados");
+    }
+
+    const response = await res.json();
+    return response.dados[0]; // Ajuste aqui para pegar o primeiro elemento do array 'dados'
+  } catch (error) {
+    console.log("Error loading dados: ", error);
+    return null;
+  }
+};
+
+// Componente VisaoGeral
+export default function VisaoGeral() {
+  const [dados, setDados] = useState(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const data = await getDados();
+      console.log(data); // Para depuração
+      if (data) {
+        setDados(data);
+      }
+    };
+    fetchData();
+  }, []);
+
+  if (!dados || !dados.estatisticas || !dados.graficoLocal || !dados.graficoDiasSemana) {
+    return <div className="relative z-7 mt-14 w-full pt-4 pl-80 pr-[60px]">Carregando...</div>;
+  }
+
+  // Dados foram carregados e são válidos
+  const { vetorXGeral, vetorYGeral, estatisticas, graficoLocal, graficoDiasSemana } = dados;
+
+  return (
+    <div id="conteudo" className="relative z-7 mt-14 w-full pt-4 pl-80 pr-[60px]">
       <div outline outline-slate-100 outline-offset-8 rounded>
+        {console.log("esse é o vetor geral", vetorXGeral)}
         <PlotlyChart
           nome={"TOTAL DIÁRIO - últimos 14 dias"}
           vetorX={vetorXGeral}
@@ -49,88 +85,40 @@ export default function VisaoGeral() {
       </div>
       <div className="flex justify-around items-center mb-12">
         <EstatisticaGeral
-          numero={mediaMensal}
+          numero={estatisticas.mediaMensal}
           nome={"Média mensal"}
-        ></EstatisticaGeral>
+        />
         <EstatisticaGeral
-          numero={mediaSemanal}
+          numero={estatisticas.mediaSemanal}
           nome={"Média semanal"}
-        ></EstatisticaGeral>
+        />
         <EstatisticaGeral
-          numero={mediaDiaria}
+          numero={estatisticas.mediaDiaria}
           nome={"Média diária"}
-        ></EstatisticaGeral>
+        />
         <EstatisticaGeral
-          numero={periodoTrafego}
+          numero={estatisticas.periodoTrafego}
           nome={"Período de maior tráfego"}
-        ></EstatisticaGeral>
+        />
       </div>
       <div className="grid grid-cols-2 gap-12">
         <PlotlyChart
           nome={"Por Local"}
-          vetorX={vetorXLocal}
-          vetorY={vetorYLocal}
+          vetorX={graficoLocal.vetorXLocal}
+          vetorY={graficoLocal.vetorYLocal}
           orientacao={"h"}
         />
         <PlotlyChart
           nome={"Por Dia da Semana"}
-          vetorX={vetorXDias}
-          vetorY={vetorYDias}
+          vetorX={graficoDiasSemana.vetorXDias}
+          vetorY={graficoDiasSemana.vetorYDias}
           orientacao={"h"}
         />
         <GraficoBarras
           nome={"Analítico"}
           imagem={"/graficos/grafico_analitico.png"}
-        ></GraficoBarras>
-        <div className="outline outline-slate-100 outline-offset-8 rounded mx-4">
-          <div className="flex justify-between">
-            <p className="mb-4">Câmeras</p>
-            <p>...</p>
-          </div>
-          <div className="flex-col">
-            <Cameras
-              thumb={"/thumb_camera.jpg"}
-              nome={"Câmera 1 - Entrada Mackenzie"}
-              status={"ATIVA"}
-            ></Cameras>
-            <Cameras
-              thumb={"/thumb_camera.jpg"}
-              nome={"Câmera 2 - Primeiro andar"}
-              status={"ATIVA"}
-            ></Cameras>
-            <Cameras
-              thumb={"/thumb_camera.jpg"}
-              nome={"Câmera 3 - Segundo andar"}
-              status={"DESLIGADA"}
-            ></Cameras>
-            <Cameras
-              thumb={"/thumb_camera.jpg"}
-              nome={"Câmera 4 - Terceiro andar"}
-              status={"ATIVA"}
-            ></Cameras>
-          </div>
-        </div>
+        />
       </div>
     </div>
   );
 }
-
-//tentando implementar .map....
-/*
-                    <Cameras
-                    thumb={[
-                        "/thumb_camera.jpg",
-                        "/thumb_camera.jpg",
-                        "/thumb_camera.jpg",
-                        "/thumb_camera.jpg"]}
-                    nome={[
-                        "Câmera 1 - Entrada Térreo",
-                        "Câmera 2 - Primeiro andar",
-                        "Câmera 3 - Segundo andar",
-                        "Câmera 4 - Terceiro andar"]}
-                    status={[
-                        "ATIVA",
-                        "ATIVA",
-                        "MANUTENÇÃO",
-                        "ATIVA"]}></Cameras>
-*/

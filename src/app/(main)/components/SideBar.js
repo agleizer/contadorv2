@@ -30,7 +30,6 @@ export default function SideBar() {
         <ItemSideBar
           icon={Squares2X2Icon}
           items={[
-          <Link href="/visaogeral">Visão geral</Link>,
           <Link href="/porlocal">Por local</Link>,
           <Link href="/calendario">Por período</Link>,
           "Estatísticas"]}
